@@ -1,26 +1,62 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import Cocktail from './Cocktail.js';
+import config from './config'
+import SpotifyPlaylist from './SpotifyPlaylist.js'
 
-function App() {
+const hash = window.location.hash
+.substring(1)
+.split('&')
+.reduce( (initial, item)=>{
+  if (item){
+    let parts = item.split('=')
+    initial[parts[0]] = decodeURIComponent(parts[1])
+  }
+  return initial;
+}, {})
+window.location.hash = ''
+
+
+class App extends React.Component {
+state = {
+  searchTerm: null,
+  token: null
+}
+
+
+componentDidMount(){
+  let _token = hash.access_token
+if(_token){
+  this.setState({
+    token: _token
+  })
+}
+
+}
+
+
+setSearchTerm = (term) =>{
+  this.setState({
+    searchTerm: term
+  })
+}
+  render (){
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
+      {!this.state.token && (
+        <a href={`https://accounts.spotify.com/authorize?client_id=${config.CLIENT_ID}&redirect_uri=${config.REDIRECT_URI}&response_type=token&show_dialog=true`} >
+          Log In to Spotify
         </a>
-      </header>
+      )}
+      {this.state.token && ( <div>
+             <Cocktail setTerm = {(term)=>this.setSearchTerm(term)}/>
+
+    <SpotifyPlaylist token={this.state.token} search={this.state.searchTerm}/>
+    </div>
+      )}
     </div>
   );
+  }
 }
 
 export default App;
