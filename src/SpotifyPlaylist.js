@@ -6,10 +6,9 @@ export default class SpotifyPlaylist extends React.Component {
   state = {
     searchResults: null,
     hasAccessToken: false,
-    accessToken: null
+    accessToken: this.props.token
   };
 
-  searchTracks = () => {};
 
   render() {
     if (this.props.token && this.props.search) {
@@ -26,7 +25,7 @@ export default class SpotifyPlaylist extends React.Component {
     return (
       <div>
         <h2>Your Playlist Will Display here</h2>
-        {tracks && <><iframe src=`${baseUrl + songs}` height="400"></iframe></>}
+       
       </div>
     );
   }

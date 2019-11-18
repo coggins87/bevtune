@@ -2,7 +2,6 @@ import React from 'react';
 import './App.css';
 import Cocktail from './Cocktail.js';
 import config from './config'
-import SpotifyPlaylist from './SpotifyPlaylist.js'
 
 const hash = window.location.hash
 .substring(1)
@@ -36,9 +35,8 @@ if(_token){
 
 
 setSearchTerm = (term) =>{
-  this.setState({
-    searchTerm: term
-  })
+  console.log(this.props)
+ return term
 }
   render (){
   return (
@@ -49,9 +47,8 @@ setSearchTerm = (term) =>{
         </a>
       )}
       {this.state.token && ( <div>
-             <Cocktail setTerm = {(term)=>this.setSearchTerm(term)}/>
+             <Cocktail token={this.state.token}/>
 
-    <SpotifyPlaylist token={this.state.token} search={this.state.searchTerm}/>
     </div>
       )}
     </div>

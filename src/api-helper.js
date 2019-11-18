@@ -9,7 +9,7 @@ export default class API {
     if (body) options.body = JSON.stringify(body);
     return fetch(url + endpoint, options).then(res => {
       if (res.status !== 204) {
-        return res.json();
+        return res.json()
       } else {
         return res.json().then(e => Promise.reject(e));
       }
