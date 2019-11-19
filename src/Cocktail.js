@@ -7,7 +7,6 @@ export default class Cocktail extends React.Component {
     error: "",
     searchTerm: "",
     cocktailResults: "",
-    cocktailResultsDisplay: true,
     drinkName: "",
     drinkToMake: []
   };
@@ -34,14 +33,14 @@ export default class Cocktail extends React.Component {
       });
     });
   };
-  setDrink = drinkName => {
-    let drinkToMake = this.state.cocktailResults.filter(
-      drink => drink.strDrink === drinkName
+  setDrink = selectDrinkName => {
+    let selectDrinkToMake = this.state.cocktailResults.filter(
+      drink => drink.strDrink === selectDrinkName
     );
     this.setState({
-      drinkName: drinkName,
-      drinkToMake: drinkToMake,
-      cocktailResultsDisplay: false
+      drinkName: selectDrinkName,
+      drinkToMake: selectDrinkToMake,
+      cocktailResults: ''
     });
   };
 
@@ -52,7 +51,7 @@ export default class Cocktail extends React.Component {
       results = "No cocktails found :(";
     } else if (results === "") {
       results = "";
-    } else if (this.state.cocktailResultsDisplay === true) {
+    } else {
       results = this.state.cocktailResults.map((drink, index) => {
         return (
           <li key={index} id={drink.strDrink}>
@@ -65,11 +64,12 @@ export default class Cocktail extends React.Component {
           </li>
         );
       });
-    } else results = "";
+    }
 
     let drinkIngredients = [];
     let drinkMeasures = [];
     let drink = this.state.drinkToMake;
+    let drinkName=this.state.drinkName
     if (drink.length === 0) {
       drinkIngredients.push("No ingredients");
     } else {
@@ -85,6 +85,10 @@ export default class Cocktail extends React.Component {
     for (let i = 0; i < drinkIngredients.length; i++) {
       drinkIngredients[i] += `, ${drinkMeasures[i]}`;
     }
+
+  drinkIngredients.map((item, index) => {
+      return <li key={index}>{item}</li>;
+    })
     return (
       <div>
         {this.state.error && <p>{this.state.error}</p>}
@@ -108,22 +112,20 @@ export default class Cocktail extends React.Component {
         )}
         {this.state.drinkName && (
           <div>
-            <h2>Sweet! You're Making a {this.state.drinkName}</h2>
+            <h2>Sweet! You're Making a {drinkName}</h2>
             <h3>You'll Need:</h3>
             <ul>
-              {drinkIngredients.map((item, index) => {
-                return <li key={index}>{item}</li>;
-              })}
+              {drinkIngredients}
             </ul>
             <h3>Here's How:</h3>
             <p>{this.state.drinkToMake[0].strInstructions}</p>
             
           </div>
         )}
-        <SpotifyPlaylist
+      {drinkName && <SpotifyPlaylist
               token={this.props.token}
-              search={this.state.drinkName}
-            />
+              search={drinkName}
+            /> }  
       </div>
     );
   }
