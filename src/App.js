@@ -2,6 +2,7 @@ import React from "react";
 import "./App.css";
 import Cocktail from "./Cocktail.js";
 import config from "./config";
+import LandingPage from "./LandingPage.js"
 
 const hash = window.location.hash
   .substring(1)
@@ -30,18 +31,28 @@ class App extends React.Component {
     }
   }
 
+  logoutUser = ()=>{
+    this.setState({
+      token: null,
+      searchTerm: null
+    })
+  }
+
   render() {
     return (
       <div className="App">
-        {!this.state.token && (
+        {!this.state.token && (<>
+          <LandingPage />
           <a
             href={`https://accounts.spotify.com/authorize?client_id=${config.CLIENT_ID}&redirect_uri=${config.REDIRECT_URI}&response_type=token&show_dialog=true&scope=playlist-modify-public`}
           >
             Log In to Spotify
           </a>
+          </>
         )}
         {this.state.token && (
           <div>
+            <button onClick={this.logoutUser}>Logout</button>
             <Cocktail token={this.state.token} />
           </div>
         )}
