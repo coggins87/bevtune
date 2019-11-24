@@ -40,41 +40,75 @@ export default class SpotifyPlaylist extends React.Component {
       songList: null
     });
   };
-
-  generatePlaylist = () => {
+  checkIfPlaylistExists = name => {
     return fetch("https://api.spotify.com/v1/users/chiggins5/playlists", {
-      method: "POST",
+      method: "GET",
       headers: {
-        "Content-Type": "Application/JSON",
         Authorization: `Bearer ${this.props.token}`
-      },
-      body: JSON.stringify({
-        name: `${this.props.search}`,
-        description: `Bevtune playlist for drinking ${this.props.search}`,
-        public: true
-      })
+      }
     })
-      .then(response => {
-        return response.json();
+      .then(res => res.json())
+      .then(data => {
+        let output;
+        data.items.forEach(item => {
+          if (item.name === name) output = item;
+        });
+        return output;
+      });
+  };
+  generatePlaylist = async () => {
+    let playlist = await this.checkIfPlaylistExists(this.props.search);
+    console.log(playlist)
+    if (!playlist) {
+      return fetch("https://api.spotify.com/v1/users/chiggins5/playlists", {
+        method: "POST",
+        headers: {
+          "Content-Type": "Application/JSON",
+          Authorization: `Bearer ${this.props.token}`
+        },
+        body: JSON.stringify({
+          name: `${this.props.search}`,
+          description: `Bevtune playlist for drinking ${this.props.search}`,
+          public: true
+        })
       })
-      .then(data => this.populatePlaylist(data.id));
+        .then(response => {
+          return response.json();
+        })
+        .then(data => {
+          console.log(data);
+          this.populatePlaylist(data.tracks.href);
+        });
+    } else if (playlist.tracks.total === 0) { //playlist exists but no songs
+      this.populatePlaylist(playlist.tracks.href);
+    } else { //playlist exists and has songs in it
+      this.setState({
+        songList: null,
+        playlistMade:true,
+      })
+    }
   };
 
-  populatePlaylist = playlistID => {
+  populatePlaylist = playlistURI => {
     let songURIs = this.state.songList.map(uri => {
       return `${uri.key}`;
     });
-    console.log(songURIs);
-    return fetch(`https://api.spotify.com/vi/playlists/${playlistID}/tracks`, {
+    return fetch(playlistURI, {
       method: "POST",
       headers: {
         "Content-Type": "Application/JSON",
         Authorization: `Bearer ${this.props.token}`
       },
-      body: { uris: JSON.stringify(songURIs) }
+      body: JSON.stringify({ uris: songURIs })
     })
       .then(res => res.json())
-      .then(data => console.log(data));
+      .then(data => {
+        console.log(data);
+        this.setState({
+          songList: null,
+          playListMade: true
+        });
+      });
   };
   render() {
     return (
@@ -83,6 +117,7 @@ export default class SpotifyPlaylist extends React.Component {
         {this.state.songList && <ul>{this.state.songList}</ul>}
         <button onClick={this.generatePlaylist}>Yes</button>
         <button onClick={this.clearResults}>No, clear these songs</button>
+        {this.state.playListMade && <p>Playlist Made!</p>}
       </div>
     );
   }
