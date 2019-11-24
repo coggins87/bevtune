@@ -6,7 +6,9 @@ export default class SpotifyPlaylist extends React.Component {
   state = {
     searchResults: null,
     hasAccessToken: false,
-    songList: null
+    songList: null,
+    playlistMade: false,
+    playlist: null
   };
 
   componentDidMount() {
@@ -37,7 +39,9 @@ export default class SpotifyPlaylist extends React.Component {
 
   clearResults = () => {
     this.setState({
-      songList: null
+      songList: null,
+      playlist: null,
+      playListMade: false
     });
   };
   checkIfPlaylistExists = name => {
@@ -58,7 +62,7 @@ export default class SpotifyPlaylist extends React.Component {
   };
   generatePlaylist = async () => {
     let playlist = await this.checkIfPlaylistExists(this.props.search);
-    console.log(playlist)
+    console.log(playlist);
     if (!playlist) {
       return fetch("https://api.spotify.com/v1/users/chiggins5/playlists", {
         method: "POST",
@@ -77,19 +81,22 @@ export default class SpotifyPlaylist extends React.Component {
         })
         .then(data => {
           console.log(data);
-          this.populatePlaylist(data.tracks.href);
+          this.populatePlaylist(data.tracks.href, data.id);
         });
-    } else if (playlist.tracks.total === 0) { //playlist exists but no songs
-      this.populatePlaylist(playlist.tracks.href);
-    } else { //playlist exists and has songs in it
+    } else if (playlist.tracks.total === 0) {
+      //playlist exists but no songs
+      this.populatePlaylist(playlist.tracks.href, playlist.id);
+    } else {
+      //playlist exists and has songs in it
       this.setState({
         songList: null,
-        playlistMade:true,
-      })
+        playlistMade: true,
+        playlist: playlist.id
+      });
     }
   };
 
-  populatePlaylist = playlistURI => {
+  populatePlaylist = (playlistURI, playlistID) => {
     let songURIs = this.state.songList.map(uri => {
       return `${uri.key}`;
     });
@@ -106,18 +113,35 @@ export default class SpotifyPlaylist extends React.Component {
         console.log(data);
         this.setState({
           songList: null,
-          playListMade: true
+          playListMade: true,
+          playlist: playlistID
         });
       });
   };
   render() {
     return (
       <div>
-        <h2>Here are your songs! Would you like to generate a playlist?</h2>
-        {this.state.songList && <ul>{this.state.songList}</ul>}
-        <button onClick={this.generatePlaylist}>Yes</button>
-        <button onClick={this.clearResults}>No, clear these songs</button>
-        {this.state.playListMade && <p>Playlist Made!</p>}
+        {this.state.songList && (
+          <div>
+            {" "}
+            <h2>Here are your songs! Would you like to generate a playlist?</h2>
+            <button onClick={this.generatePlaylist}>Yes</button>
+            <button onClick={this.clearResults}>No, clear these songs</button>
+            <ul>{this.state.songList}</ul>
+          </div>
+        )}
+
+        {this.state.playListMade && (
+          <iframe
+            title="bevtune playlist"
+            src={`https://open.spotify.com/embed/playlist/${this.state.playlist}`}
+            width="300"
+            height="380"
+            frameborder="0"
+            allowtransparency="true"
+            allow="encrypted-media"
+          />
+        )}
       </div>
     );
   }
